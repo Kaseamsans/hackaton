@@ -40,16 +40,16 @@ class FrequencySummarizer:
            freq, a dictionary where freq[w] is the frequency of w.
         """
 
-        print('_compute_frequencies : ', word_sent)
+        #print('_compute_frequencies : ', word_sent)
         self.construct_stopword()
         freq = defaultdict(int)
         for s in word_sent:
           for word in s:
-            print('word in list : ' ,word)
+            #print('word in list : ' ,word)
             if word not in self._stopwords:
               freq[word] += 1
 
-        print(freq)
+        #print(freq)
         # frequencies normalization and fitering
         m = float(max(freq.values()))
         for w in list(freq):
@@ -66,7 +66,7 @@ class FrequencySummarizer:
         for sentence in word_list:
           for word in sentence:
             if word not in self._stopwords:
-              print('word in list for find simalarity : ' ,word)
+              #print('word in list for find simalarity : ' ,word)
               import requests
 
               params = {'word':word,'model':'thwiki','numword':'2'}
@@ -113,7 +113,7 @@ class FrequencySummarizer:
 
           meeting_content_word.append(response.json()['tokens'])
 
-        print(meeting_content_word)
+        #print(meeting_content_word)
         # ---------------------------------------------------------------
 
         # ------ Word Similarity -----
@@ -121,7 +121,7 @@ class FrequencySummarizer:
 
         # ---------------------------------------------------------------
         self._freq = self._compute_frequencies(meeting_word_sim)
-        print(self._freq)
+        #print(self._freq)
 
         ranking = defaultdict(int)
         for i,sent in enumerate(meeting_word_sim):
