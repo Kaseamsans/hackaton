@@ -50,13 +50,14 @@ class analysis(APIView):
         return Response(text_arr,status=status.HTTP_201_CREATED)
 
 class summary(APIView):
-    def get(self, request, format=None):
-        
+    def post(self, request, format=None):
+        n = request.data['n']
+        print(n)
         text_arr = analyticText();
         content = get_meeting_content(text_arr)
 
         freq = FrequencySummarizer(content)
-        result = freq.summarize(3)
+        result = freq.summarize(int(n))
                     
         return Response(result,status=status.HTTP_201_CREATED)
 
