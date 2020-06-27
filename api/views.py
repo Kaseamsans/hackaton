@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 import os,sys
 from django.core.files.storage import default_storage
+from django.contrib.contenttypes.models import ContentType
 import requests
 from pydub import AudioSegment
 import json
@@ -16,15 +17,25 @@ class UploadFile(APIView):
     parser_class = (FileUploadParser,)
 
     def post(self, request, format=None):
+        #print(ContentType.objects.get_for_model(self))
+        print(request.content_type);
         if 'file' not in request.data:
             raise ParseError("Empty content")
 
-        f = request.data['file']
+        try:
+            f = request.data['file']
+            file_name = f.name
+            #print(file_name)
+            if file_name.endswith(".wav"):
+                file_name = default_storage.save(f.name, f)
+                return Response({"status":"success","filename":file_name},status=status.HTTP_201_CREATED)
 
-        file_name = default_storage.save(f.name, f)
-        
+            else :
+                return Response({"status":"bad request"},status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"status":"bad requests"},status=status.HTTP_400_BAD_REQUEST)
         #mymodel.my_file_field.save(f.name, f, save=True)
-        return Response({file_name},status=status.HTTP_201_CREATED)
+
 
 class analysis(APIView):
     def get(self, request, format=None):
@@ -45,7 +56,7 @@ class analysis(APIView):
                         text_with_space = json_data['result']
                         text = json_data['result'].replace(' ','');
                         end = end  + (len(f) / f.samplerate)
-                        info = { "start": start, "end": end, "string_data": text, "string_data_with_space" :text_with_space  }
+                        info = { "start": start, "end": end, "string_data": text, "string_data_with_space" :text_with_space, "data":{ "note":text }  }
                         start = start + (len(f) / f.samplerate)   
                         text_arr.append(info)
 
@@ -69,7 +80,4 @@ def SpeechToText(filename):
         response = requests.request("POST", url, headers=headers, files=files, data=param)
 
         return response
- 
 
-
-# Create your views here.
