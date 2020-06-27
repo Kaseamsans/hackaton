@@ -25,7 +25,7 @@ SECRET_KEY = ')4oc_!u=jpk1ke^9sqwu3%6owysc!q2^a4fqjpun@6&y)xy4mt'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['hackaton16.herokuapp.com']
+ALLOWED_HOSTS = ['*','hackaton16.herokuapp.com']
 
 
 # Application definition
