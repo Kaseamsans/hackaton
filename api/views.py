@@ -11,6 +11,11 @@ from pydub import AudioSegment
 import json
 import soundfile as sf
 
+from .method.get_meeting_content import get_meeting_content
+from .method.finding_planning_date import finding_planning_date
+from .method.get_sentiment_content import get_sentiment_content
+from .method.Summarizer import FrequencySummarizer 
+
 
 
 class UploadFile(APIView):
@@ -39,30 +44,75 @@ class UploadFile(APIView):
 
 class analysis(APIView):
     def get(self, request, format=None):
-        folder = 'media'
-        text_arr = list()
-        text_with_space = ""
-        start = 0;
-        end = 0
-        for (dirpath, dirnames, filenames) in os.walk(folder):
-            for filename in filenames:
-                if filename.endswith(".wav"):
-                    filepath = dirpath + '/' + filename
-                    f = sf.SoundFile(filepath)
-                    
-                    res = SpeechToText(filepath);
-                    json_data = json.loads(res.text)
-                    if(json_data['status'] == 'success'):
-                        text_with_space = json_data['result']
-                        text = json_data['result'].replace(' ','');
-                        end = end  + (len(f) / f.samplerate)
-                        info = { "start": start, "end": end, "string_data": text, "string_data_with_space" :text_with_space, "data":{ "note":text }  }
-                        start = start + (len(f) / f.samplerate)   
-                        text_arr.append(info)
-
+        
+        text_arr = analyticText();
                     
         return Response(text_arr,status=status.HTTP_201_CREATED)
 
+class summary(APIView):
+    def get(self, request, format=None):
+        
+        text_arr = analyticText();
+        content = get_meeting_content(text_arr)
+
+        freq = FrequencySummarizer(content)
+        result = freq.summarize(3)
+                    
+        return Response(result,status=status.HTTP_201_CREATED)
+
+class Planning(APIView):
+    def get(self, request, format=None):
+        
+        text_arr = analyticText();
+        contents = get_meeting_content(text_arr)
+
+        return_data = []
+
+        for content in contents:
+            content_tmp = finding_planning_date(content)
+            if(content_tmp["day_of_week"] != "null"):
+                return_data.append(content_tmp)
+            
+                    
+        return Response(return_data,status=status.HTTP_201_CREATED)
+
+class Sentiment(APIView):
+    def get(self,request,format=None):
+        text_arr = analyticText();
+        contents = get_meeting_content(text_arr)
+        #print(contents)
+        sentiment_content = get_sentiment_content(contents)
+
+        print(dict(sentiment_content))
+
+
+        return Response(dict(sentiment_content),status=status.HTTP_201_CREATED)
+
+def analyticText():
+    folder = 'media'
+    text_arr = list()
+    text_with_space = ""
+    start = 0;
+    end = 0
+    for (dirpath, dirnames, filenames) in os.walk(folder):
+        for filename in filenames:
+            if filename.endswith(".wav"):
+                filepath = dirpath + '/' + filename
+                f = sf.SoundFile(filepath)
+                    
+                res = SpeechToText(filepath);
+                json_data = json.loads(res.text)
+                if(json_data['status'] == 'success'):
+                    text_with_space = json_data['result']
+                    text = json_data['result'].replace(' ','');
+                    end = end  + (len(f) / f.samplerate)
+                    info = { "start": start, "end": end, "string_data": text, "string_data_with_space" :text_with_space, "data":{ "note":text }  }
+                    start = start + (len(f) / f.samplerate)   
+                    text_arr.append(info)
+
+    return text_arr
+
+                        
 
 def SpeechToText(filename):
         url = "https://api.aiforthai.in.th/partii-webapi"
