@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*','hackaton16.herokuapp.com']
 
-
+CORS_ORIGIN_ALLOW_ALL = DEBUG
 # Application definition
 
 INSTALLED_APPS = [
