@@ -89,6 +89,27 @@ class Sentiment(APIView):
 
         return Response(dict(sentiment_content),status=status.HTTP_201_CREATED)
 
+class total(APIView):
+    def post(self, request, format=None):
+        n = request.data['n']
+        n = int(n)
+        text_arr = analyticText();
+        contents = get_meeting_content(text_arr)
+
+        sentiment_content = get_sentiment_content(contents) #sentiment
+        sentiment_content = dict(sentiment_content);
+
+        plan = [] #planning
+        for content in contents:
+            content_tmp = finding_planning_date(content)
+            if(content_tmp["day_of_week"] != "null"):
+                plan.append(content_tmp)
+
+        freq = FrequencySummarizer(contents) #summary
+        summary = freq.summarize(n)
+
+        return Response({'analytic':text_arr,'sentiment':sentiment_content,'planning':plan,'summary':summary},status=status.HTTP_201_CREATED)
+
 def analyticText():
     folder = 'media'
     text_arr = list()
